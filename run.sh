@@ -30,5 +30,24 @@ fi
 mkdir -p $(dirname "$1") workdir
 cd workdir && sysbench "${@:2}" | tee "$out_file" 
 
+# get # of physical CPUs, Threads, model
+
+echo "----- Platform CPU Information -----" >> $out_file
+cat /proc/cpuinfo | grep -m 1 "model name" >> $out_file
+
+procCount=1
+
+for procNum in [1,2,3,4,5,6,7,8]
+do
+  if  cat /proc/cpuinfo | grep 'physical id' | grep -q $procNum; then
+    let procCount=procCount+1
+  fi
+done
+
+echo "CPU Count       : $procCount" >> $out_file 
+ 
+cat /proc/cpuinfo | grep -m 1 cores >> $out_file
+grep -m 1 -E "siblings" /proc/cpuinfo >> $out_file
+
 # Navigate back to the original path in case people call this script using "source" command.
 cd ..
